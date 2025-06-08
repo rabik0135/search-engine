@@ -1,10 +1,32 @@
-# example values
+server:
+  port: 8080
+
+spring:
+  datasource:
+    username: root
+    password: rootroot
+    url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+indexing:
+  user-agent: "HeliontSearchBot/1.0 (+http://heliont.ru/bot.html)"
+  referrer: "http://www.google.com"
+  delay-ms: 1500
+  timeout-ms: 10000
 
 indexing-settings:
   sites:
-    - url: https://www.lenta.ru
-      name: Лента.ру
-    - url: https://www.skillbox.ru
-      name: Skillbox
+    - url: https://beltexoptic.by/
+      name: Белтекс Оптик
+    - url: https://www.bsuir.by/
+      name: Bsuir
     - url: https://www.playback.ru
       name: PlayBack.Ru
+  page-processing-timeout-ms: 500
