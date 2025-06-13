@@ -3,7 +3,7 @@ package searchengine.dto;
 import searchengine.model.Site;
 
 public record PageDto(Integer id,
-                      Site site,
+                      Integer siteId,
                       String path,
                       Integer code,
                       String content) {

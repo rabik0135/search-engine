@@ -1,4 +1,13 @@
 package searchengine.dto;
 
-public record SiteDto(String url, String name) {
+import searchengine.model.Status;
+
+import java.time.LocalDateTime;
+
+public record SiteDto(Integer id,
+                      Status status,
+                      LocalDateTime statusTime,
+                      String lastError,
+                      String url,
+                      String name) {
 }

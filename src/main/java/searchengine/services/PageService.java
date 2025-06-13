@@ -8,7 +8,7 @@ import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.util.PageMapper;
+import searchengine.util.mapper.PageMapper;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class PageService implements CRUDService<Page, Integer, PageDto>{
     public PageDto create(PageDto pageDto) {
         Page page = pageMapper.toEntity(pageDto);
 
-        Site site = siteRepository.findById(pageDto.site().getId())
+        Site site = siteRepository.findById(pageDto.siteId())
                 .orElseThrow(() -> new EntityNotFoundException("Site not found"));
         page.setSite(site);
 
@@ -56,8 +56,8 @@ public class PageService implements CRUDService<Page, Integer, PageDto>{
 
         pageMapper.updateFromDto(pageDto, existing);
 
-        if (!existing.getSite().getId().equals(pageDto.site().getId())) {
-            Site newSite = siteRepository.findById(pageDto.site().getId())
+        if (!existing.getSite().getId().equals(pageDto.siteId())) {
+            Site newSite = siteRepository.findById(pageDto.siteId())
                     .orElseThrow(() -> new EntityNotFoundException("Site not found"));
             existing.setSite(newSite);
         }

@@ -1,5 +1,6 @@
 package searchengine.services;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,7 @@ import searchengine.model.Site;
 import searchengine.model.Status;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.util.SiteMapper;
+import searchengine.util.mapper.SiteMapper;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class SiteService implements CRUDService<Site, Integer, SiteDto> {
 
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
+    private final EntityManager entityManager;
     private final SiteMapper siteMapper;
 
     @Override
@@ -63,15 +65,13 @@ public class SiteService implements CRUDService<Site, Integer, SiteDto> {
         siteRepository.deleteById(id);
     }
 
-
+    @Transactional
     public void deleteSiteData(String url) {
         siteRepository.findByUrl(url).ifPresent(
                 site -> {
-                    site.getPages().clear();
-                    siteRepository.saveAndFlush(site);
-
-                    pageRepository.deleteAllBySiteId(site.getId());
+                    //site.clearPages();
                     siteRepository.delete(site);
+
                 }
         );
     }
