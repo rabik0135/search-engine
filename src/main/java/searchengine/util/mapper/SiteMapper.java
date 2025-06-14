@@ -15,5 +15,4 @@ public interface SiteMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromDto(SiteDto dto, @MappingTarget Site entity);
-
 }

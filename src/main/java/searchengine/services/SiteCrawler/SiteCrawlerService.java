@@ -1,5 +1,9 @@
 package searchengine.services.SiteCrawler;
 
+import searchengine.dto.IndexingResponse;
+
 public interface SiteCrawlerService {
-    void startIndexing();
+    IndexingResponse startIndexing();
+    IndexingResponse stopIndexing();
+    boolean isIndexing();
 }

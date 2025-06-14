@@ -16,14 +16,4 @@ public interface PageMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromDto(PageDto dto, @MappingTarget Page entity);
 
-    @Named("idToSite")
-    default Site idToSite(Integer id) {
-        if (id == null) {
-            return null;
-        }
-        Site site = new Site();
-        site.setId(id);
-        return site;
-    }
-
 }

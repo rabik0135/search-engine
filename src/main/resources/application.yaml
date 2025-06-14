@@ -20,10 +20,11 @@ indexing:
   referrer: "http://www.google.com"
   delay-ms: 1500
   timeout-ms: 10000
+  page-processing-timeout-ms : 500
 
 indexing-settings:
   sites:
     - url: https://beltexoptic.by/
       name: Белтекс Оптик
-
-  page-processing-timeout-ms: 500
+    - url: https://lenta.ru/
+      name: Lenta
