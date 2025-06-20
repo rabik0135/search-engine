@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Service
 @RequiredArgsConstructor
 public class SiteCrawlerServiceImpl implements SiteCrawlerService {
-
     private final SitesList sites;
     private final SiteService siteService;
     private final SiteRepository siteRepository;
@@ -64,6 +63,20 @@ public class SiteCrawlerServiceImpl implements SiteCrawlerService {
         }
 
         activeSites.forEach(site -> siteService.updateSiteStatus(site, Status.FAILED, "Индексация остановлена пользователем"));
+        return new IndexingResponse(true, null);
+    }
+
+    @Override
+    public IndexingResponse indexOnePage(String siteUrl) {
+      return sites.getSites().stream()
+                .filter(siteFromConfig -> siteUrl.equals(siteFromConfig.url()))
+                .findFirst()
+                .map(this::indexSiteAndReturnSuccess)
+                .orElseGet(() -> new IndexingResponse(false, "Данная страница находится за пределами сайтов, указанных в конфигурационном файле"));
+    }
+
+    private IndexingResponse indexSiteAndReturnSuccess(SiteFromConfig siteFromConfig) {
+        indexSite(siteFromConfig);
         return new IndexingResponse(true, null);
     }
 

@@ -12,7 +12,6 @@ import searchengine.services.SiteService;
 @RequestMapping("/site")
 @RequiredArgsConstructor
 public class SiteController {
-
     private final SiteService siteService;
 
     @GetMapping("/{id}")
@@ -24,5 +23,4 @@ public class SiteController {
     public ResponseEntity<?> getAllSites() {
         return ResponseEntity.ok(siteService.getAll());
     }
-
 }

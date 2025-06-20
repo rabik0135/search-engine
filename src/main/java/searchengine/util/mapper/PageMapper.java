@@ -3,7 +3,6 @@ package searchengine.util.mapper;
 import org.mapstruct.*;
 import searchengine.dto.PageDto;
 import searchengine.model.Page;
-import searchengine.model.Site;
 
 @Mapper(componentModel = "spring", uses = {SiteMapper.class})
 public interface PageMapper {
@@ -15,5 +14,4 @@ public interface PageMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromDto(PageDto dto, @MappingTarget Page entity);
-
 }

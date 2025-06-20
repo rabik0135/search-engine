@@ -4,7 +4,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Value;
 import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.model.Status;
@@ -21,7 +20,6 @@ import java.util.concurrent.RecursiveAction;
 
 
 public class SiteCrawlerTask extends RecursiveAction {
-
     private final static int DELAY_MS = 700;
 
     private final String url;
@@ -67,7 +65,7 @@ public class SiteCrawlerTask extends RecursiveAction {
             Page page = Page.builder()
                     .site(site)
                     .code(statusCode)
-                    .content(document.outerHtml())
+                    .content(Jsoup.parse(document.outerHtml()).text())
                     .path(path)
                     .build();
 

@@ -1,17 +1,16 @@
 package searchengine.model;
 
-import lombok.*;
-
 import jakarta.persistence.*;
+import lombok.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "page")
-public class Page {
+@Table(name = "lemma")
+public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
@@ -21,12 +20,9 @@ public class Page {
     @JoinColumn(name = "site_id", nullable = false)
     private Site site;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String path;
+    @Column(nullable = false)
+    private String lemma;
 
     @Column(nullable = false)
-    private Integer code;
-
-    @Column(nullable = false, columnDefinition = "MEDIUMTEXT")
-    private String content;
+    private Integer frequency;
 }

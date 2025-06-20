@@ -20,7 +20,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class SiteService implements CRUDService<Site, Integer, SiteDto> {
-
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private final EntityManager entityManager;
@@ -68,11 +67,7 @@ public class SiteService implements CRUDService<Site, Integer, SiteDto> {
     @Transactional
     public void deleteSiteData(String url) {
         siteRepository.findByUrl(url).ifPresent(
-                site -> {
-                    //site.clearPages();
-                    siteRepository.delete(site);
-
-                }
+                siteRepository::delete
         );
     }
 

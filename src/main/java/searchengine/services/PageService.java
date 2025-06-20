@@ -16,11 +16,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PageService implements CRUDService<Page, Integer, PageDto>{
-
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
     private final PageMapper pageMapper;
-
 
     @Override
     public PageDto create(PageDto pageDto) {

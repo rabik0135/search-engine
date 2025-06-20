@@ -12,15 +12,12 @@ import searchengine.services.PageService;
 @RequestMapping("/page")
 @RequiredArgsConstructor
 public class PageController {
-
     private final PageService pageService;
-
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getPageById(@PathVariable Integer id) {
         return ResponseEntity.ok(pageService.getById(id));
     }
-
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllPages() {
@@ -31,6 +28,4 @@ public class PageController {
     public ResponseEntity<?> getPagesBySiteId(@PathVariable Integer id) {
         return ResponseEntity.ok(pageService.getAll());
     }
-
-
 }
