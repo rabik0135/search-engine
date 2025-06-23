@@ -9,8 +9,8 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "`index`")
-public class Index {
+@Table(name = "index_data")
+public class IndexData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)

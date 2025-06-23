@@ -1,4 +1,4 @@
-package searchengine.services.SiteCrawler;
+package searchengine.services.SiteIndexing;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -9,6 +9,7 @@ import searchengine.model.Site;
 import searchengine.model.Status;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
+import searchengine.services.lemmaService.LemmaServiceImpl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,14 +27,16 @@ public class SiteCrawlerTask extends RecursiveAction {
     private final Site site;
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
+    private final LemmaServiceImpl lemmaService;
     private final Set<String> visited;
 
 
-    public SiteCrawlerTask(String url, Site site, PageRepository pageRepository, SiteRepository siteRepository, Set<String> visited) {
+    public SiteCrawlerTask(String url, Site site, PageRepository pageRepository, SiteRepository siteRepository, LemmaServiceImpl lemmaService, Set<String> visited) {
         this.url = url;
         this.site = site;
         this.pageRepository = pageRepository;
         this.siteRepository = siteRepository;
+        this.lemmaService = lemmaService;
         this.visited = visited;
     }
 
@@ -65,11 +68,12 @@ public class SiteCrawlerTask extends RecursiveAction {
             Page page = Page.builder()
                     .site(site)
                     .code(statusCode)
-                    .content(Jsoup.parse(document.outerHtml()).text())
+                    .content(document.outerHtml())
                     .path(path)
                     .build();
 
             pageRepository.save(page);
+            lemmaService.saveLemmas(site, page);
 
             site.setStatusTime(LocalDateTime.now());
             siteRepository.save(site);
@@ -97,7 +101,7 @@ public class SiteCrawlerTask extends RecursiveAction {
                     visited.add(fullUrl);
                 }
 
-                subtasks.add(new SiteCrawlerTask(fullUrl, site, pageRepository, siteRepository, visited));
+                subtasks.add(new SiteCrawlerTask(fullUrl, site, pageRepository, siteRepository, lemmaService, visited));
             }
             invokeAll(subtasks);
         } catch (InterruptedException e) {

@@ -1,5 +1,6 @@
 package searchengine.model;
 
+import jakarta.websocket.OnError;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -37,7 +38,6 @@ public class Site {
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Page> pages;
 
-    public void clearPages() {
-        pages.clear();
-    }
+    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Lemma> lemmas;
 }

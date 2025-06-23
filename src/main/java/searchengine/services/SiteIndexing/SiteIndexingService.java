@@ -1,8 +1,8 @@
-package searchengine.services.SiteCrawler;
+package searchengine.services.SiteIndexing;
 
 import searchengine.dto.IndexingResponse;
 
-public interface SiteCrawlerService {
+public interface SiteIndexingService {
     IndexingResponse startIndexing();
     IndexingResponse stopIndexing();
     IndexingResponse  indexOnePage(String siteUrl);

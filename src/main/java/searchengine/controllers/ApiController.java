@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import searchengine.dto.IndexingResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.PageService;
-import searchengine.services.SiteCrawler.SiteCrawlerServiceImpl;
+import searchengine.services.SiteIndexing.SiteIndexingServiceImpl;
 import searchengine.services.StatisticsService.StatisticsService;
 
 @RequiredArgsConstructor
@@ -14,7 +14,7 @@ import searchengine.services.StatisticsService.StatisticsService;
 @RequestMapping("/api")
 public class ApiController {
     private final StatisticsService statisticsService;
-    private final SiteCrawlerServiceImpl siteCrawlerService;
+    private final SiteIndexingServiceImpl siteCrawlerService;
     private final PageService pageService;
 
     @GetMapping("/statistics")
