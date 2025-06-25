@@ -16,7 +16,6 @@ import searchengine.util.mapper.SiteMapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @RequiredArgsConstructor
 @Service
@@ -85,8 +84,7 @@ public class SiteService implements CRUDService<Site, Integer, SiteDto> {
                 .lastError("No errors")
                 .url(siteFromConfig.url())
                 .name(siteFromConfig.name())
-                .pages(new CopyOnWriteArrayList<>())
-                .lemmas(new CopyOnWriteArrayList<>())
+                .pages(new ArrayList<>())
                 .build();
         return siteRepository.save(site);
     }

@@ -1,6 +1,5 @@
-package searchengine.services.SiteIndexing;
+package searchengine.services.SiteCrawler;
 
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -10,8 +9,6 @@ import searchengine.model.Site;
 import searchengine.model.Status;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.services.lemmaService.LemmaService;
-import searchengine.services.lemmaService.LemmaServiceImpl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -29,16 +26,14 @@ public class SiteCrawlerTask extends RecursiveAction {
     private final Site site;
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
-    private final LemmaService lemmaService;
     private final Set<String> visited;
 
 
-    public SiteCrawlerTask(String url, Site site, PageRepository pageRepository, SiteRepository siteRepository, LemmaService lemmaService, Set<String> visited) {
+    public SiteCrawlerTask(String url, Site site, PageRepository pageRepository, SiteRepository siteRepository, Set<String> visited) {
         this.url = url;
         this.site = site;
         this.pageRepository = pageRepository;
         this.siteRepository = siteRepository;
-        this.lemmaService = lemmaService;
         this.visited = visited;
     }
 
@@ -55,26 +50,14 @@ public class SiteCrawlerTask extends RecursiveAction {
                 throw new InterruptedException("Task interrupted during delay");
             }
 
-            Connection.Response response = Jsoup.connect(url)
+            Document document = Jsoup.connect(url)
                     .userAgent("HeliontSearchBot/1.0 (+http://heliont.ru/bot.html)")
                     .referrer("http://www.google.com")
-                    .timeout(30_000)
-                    .ignoreHttpErrors(true)
-                    .execute();
+                    .get();
 
-/*            Document document = Jsoup.connect(url)
-                    .userAgent("HeliontSearchBot/1.0 (+http://heliont.ru/bot.html)")
-                    .referrer("http://www.google.com")
-                    .timeout(30_000)
-                    .get();*/
-
-/*            int statusCode = Jsoup.connect(url).execute().statusCode();
-            String path = normalizePath(url);*/
-
-            int statusCode = response.statusCode();
-            Document document = response.parse();
-
+            int statusCode = Jsoup.connect(url).execute().statusCode();
             String path = normalizePath(url);
+
             if (pageRepository.existsBySiteAndPath(site, path)) {
                 return;
             }
@@ -82,12 +65,11 @@ public class SiteCrawlerTask extends RecursiveAction {
             Page page = Page.builder()
                     .site(site)
                     .code(statusCode)
-                    .content(document.outerHtml())
+                    .content(Jsoup.parse(document.outerHtml()).text())
                     .path(path)
                     .build();
 
             pageRepository.save(page);
-            //lemmaService.saveLemmas(site, page);
 
             site.setStatusTime(LocalDateTime.now());
             siteRepository.save(site);
@@ -115,7 +97,7 @@ public class SiteCrawlerTask extends RecursiveAction {
                     visited.add(fullUrl);
                 }
 
-                subtasks.add(new SiteCrawlerTask(fullUrl, site, pageRepository, siteRepository, lemmaService, visited));
+                subtasks.add(new SiteCrawlerTask(fullUrl, site, pageRepository, siteRepository, visited));
             }
             invokeAll(subtasks);
         } catch (InterruptedException e) {

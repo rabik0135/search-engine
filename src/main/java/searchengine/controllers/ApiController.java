@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import searchengine.dto.IndexingResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.PageService;
-import searchengine.services.SiteIndexing.SiteIndexingService;
-import searchengine.services.SiteIndexing.SiteIndexingServiceImpl;
+import searchengine.services.SiteCrawler.SiteCrawlerServiceImpl;
 import searchengine.services.StatisticsService.StatisticsService;
 
 @RequiredArgsConstructor
@@ -15,7 +14,8 @@ import searchengine.services.StatisticsService.StatisticsService;
 @RequestMapping("/api")
 public class ApiController {
     private final StatisticsService statisticsService;
-    private final SiteIndexingService siteIndexingService;
+    private final SiteCrawlerServiceImpl siteCrawlerService;
+    private final PageService pageService;
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
@@ -24,7 +24,7 @@ public class ApiController {
 
     @GetMapping("/startIndexing")
     public ResponseEntity<?> startIndexing() {
-        IndexingResponse response = siteIndexingService.startIndexing();
+        IndexingResponse response = siteCrawlerService.startIndexing();
         return response.result()
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.badRequest().body(response);
@@ -32,7 +32,7 @@ public class ApiController {
 
     @GetMapping("/stopIndexing")
     public ResponseEntity<?> stopIndexing() {
-        IndexingResponse response = siteIndexingService.stopIndexing();
+        IndexingResponse response = siteCrawlerService.stopIndexing();
         return response.result()
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.badRequest().body(response);
@@ -40,7 +40,7 @@ public class ApiController {
 
     @PostMapping("/indexPage")
     public ResponseEntity<?> addPageForIndexing(@RequestParam String url) {
-        IndexingResponse response = siteIndexingService.indexOnePage(url);
+        IndexingResponse response = siteCrawlerService.indexOnePage(url);
         return response.result()
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.badRequest().body(response);

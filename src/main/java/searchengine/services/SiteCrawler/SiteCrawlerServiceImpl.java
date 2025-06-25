@@ -1,4 +1,4 @@
-package searchengine.services.SiteIndexing;
+package searchengine.services.SiteCrawler;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,7 +9,6 @@ import searchengine.model.Site;
 import searchengine.model.Status;
 import searchengine.repository.SiteRepository;
 import searchengine.services.SiteService;
-import searchengine.services.lemmaService.LemmaServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,11 +18,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
-public class SiteIndexingServiceImpl implements SiteIndexingService {
+public class SiteCrawlerServiceImpl implements SiteCrawlerService {
     private final SitesList sites;
     private final SiteService siteService;
     private final SiteRepository siteRepository;
-    private final LemmaServiceImpl lemmaService;
     private final SiteCrawlerFactory crawlerFactory;
 
     private final AtomicBoolean indexing = new AtomicBoolean(false);
