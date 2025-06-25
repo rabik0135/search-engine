@@ -1,5 +1,6 @@
 package searchengine.services.SiteIndexing;
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,6 +10,7 @@ import searchengine.model.Site;
 import searchengine.model.Status;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
+import searchengine.services.lemmaService.LemmaService;
 import searchengine.services.lemmaService.LemmaServiceImpl;
 
 import java.net.URI;
@@ -27,11 +29,11 @@ public class SiteCrawlerTask extends RecursiveAction {
     private final Site site;
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
-    private final LemmaServiceImpl lemmaService;
+    private final LemmaService lemmaService;
     private final Set<String> visited;
 
 
-    public SiteCrawlerTask(String url, Site site, PageRepository pageRepository, SiteRepository siteRepository, LemmaServiceImpl lemmaService, Set<String> visited) {
+    public SiteCrawlerTask(String url, Site site, PageRepository pageRepository, SiteRepository siteRepository, LemmaService lemmaService, Set<String> visited) {
         this.url = url;
         this.site = site;
         this.pageRepository = pageRepository;
@@ -53,14 +55,26 @@ public class SiteCrawlerTask extends RecursiveAction {
                 throw new InterruptedException("Task interrupted during delay");
             }
 
-            Document document = Jsoup.connect(url)
+            Connection.Response response = Jsoup.connect(url)
                     .userAgent("HeliontSearchBot/1.0 (+http://heliont.ru/bot.html)")
                     .referrer("http://www.google.com")
-                    .get();
+                    .timeout(30_000)
+                    .ignoreHttpErrors(true)
+                    .execute();
 
-            int statusCode = Jsoup.connect(url).execute().statusCode();
+/*            Document document = Jsoup.connect(url)
+                    .userAgent("HeliontSearchBot/1.0 (+http://heliont.ru/bot.html)")
+                    .referrer("http://www.google.com")
+                    .timeout(30_000)
+                    .get();*/
+
+/*            int statusCode = Jsoup.connect(url).execute().statusCode();
+            String path = normalizePath(url);*/
+
+            int statusCode = response.statusCode();
+            Document document = response.parse();
+
             String path = normalizePath(url);
-
             if (pageRepository.existsBySiteAndPath(site, path)) {
                 return;
             }
@@ -73,7 +87,7 @@ public class SiteCrawlerTask extends RecursiveAction {
                     .build();
 
             pageRepository.save(page);
-            lemmaService.saveLemmas(site, page);
+            //lemmaService.saveLemmas(site, page);
 
             site.setStatusTime(LocalDateTime.now());
             siteRepository.save(site);

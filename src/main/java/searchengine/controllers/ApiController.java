@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import searchengine.dto.IndexingResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.PageService;
+import searchengine.services.SiteIndexing.SiteIndexingService;
 import searchengine.services.SiteIndexing.SiteIndexingServiceImpl;
 import searchengine.services.StatisticsService.StatisticsService;
 
@@ -14,8 +15,7 @@ import searchengine.services.StatisticsService.StatisticsService;
 @RequestMapping("/api")
 public class ApiController {
     private final StatisticsService statisticsService;
-    private final SiteIndexingServiceImpl siteCrawlerService;
-    private final PageService pageService;
+    private final SiteIndexingService siteIndexingService;
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
@@ -24,7 +24,7 @@ public class ApiController {
 
     @GetMapping("/startIndexing")
     public ResponseEntity<?> startIndexing() {
-        IndexingResponse response = siteCrawlerService.startIndexing();
+        IndexingResponse response = siteIndexingService.startIndexing();
         return response.result()
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.badRequest().body(response);
@@ -32,7 +32,7 @@ public class ApiController {
 
     @GetMapping("/stopIndexing")
     public ResponseEntity<?> stopIndexing() {
-        IndexingResponse response = siteCrawlerService.stopIndexing();
+        IndexingResponse response = siteIndexingService.stopIndexing();
         return response.result()
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.badRequest().body(response);
@@ -40,7 +40,7 @@ public class ApiController {
 
     @PostMapping("/indexPage")
     public ResponseEntity<?> addPageForIndexing(@RequestParam String url) {
-        IndexingResponse response = siteCrawlerService.indexOnePage(url);
+        IndexingResponse response = siteIndexingService.indexOnePage(url);
         return response.result()
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.badRequest().body(response);
