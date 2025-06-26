@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "`index`")
+@Table(name = "index_data")
 public class Index {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

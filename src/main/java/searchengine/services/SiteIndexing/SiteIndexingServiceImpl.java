@@ -1,4 +1,4 @@
-package searchengine.services.SiteCrawler;
+package searchengine.services.SiteIndexing;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,21 +12,22 @@ import searchengine.services.SiteService;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ForkJoinPool;
+import java.util.Set;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
-public class SiteCrawlerServiceImpl implements SiteCrawlerService {
+public class SiteIndexingServiceImpl implements SiteIndexingService {
     private final SitesList sites;
     private final SiteService siteService;
     private final SiteRepository siteRepository;
     private final SiteCrawlerFactory crawlerFactory;
 
+    private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private final AtomicBoolean indexing = new AtomicBoolean(false);
-    private ForkJoinPool forkJoinPool;
     private final List<Site> activeSites = new CopyOnWriteArrayList<>();
+    private final Set<Future<?>> runningTasks = ConcurrentHashMap.newKeySet();
 
     @Override
     public IndexingResponse startIndexing() {
@@ -36,15 +37,17 @@ public class SiteCrawlerServiceImpl implements SiteCrawlerService {
 
         indexing.set(true);
         activeSites.clear();
+        runningTasks.clear();
 
         for (SiteFromConfig siteFromConfig : sites.getSites()) {
-            new Thread(() -> {
+            Future<?> future = executorService.submit(() -> {
                 try {
                     indexSite(siteFromConfig);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }).start();
+            });
+            runningTasks.add(future);
         }
 
         return new IndexingResponse(true, null);
@@ -58,9 +61,10 @@ public class SiteCrawlerServiceImpl implements SiteCrawlerService {
 
         indexing.set(false);
 
-        if (forkJoinPool != null && !forkJoinPool.isShutdown()) {
-            forkJoinPool.shutdownNow();
+        for (Future<?> task : runningTasks) {
+            task.cancel(true);
         }
+        runningTasks.clear();
 
         activeSites.forEach(site -> siteService.updateSiteStatus(site, Status.FAILED, "Индексация остановлена пользователем"));
         return new IndexingResponse(true, null);
@@ -92,10 +96,8 @@ public class SiteCrawlerServiceImpl implements SiteCrawlerService {
         activeSites.add(site);
 
         try {
-            forkJoinPool = new ForkJoinPool();
-            SiteCrawlerTask task = crawlerFactory.create(site);
-            forkJoinPool.invoke(task);
-
+            SiteCrawlerTask task = crawlerFactory.create(site, indexing);
+            task.invoke();
             site.setStatus(Status.INDEXED);
         } catch (Exception e) {
             site.setStatus(Status.FAILED);

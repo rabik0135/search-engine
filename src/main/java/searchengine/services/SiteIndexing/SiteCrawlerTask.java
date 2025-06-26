@@ -1,4 +1,4 @@
-package searchengine.services.SiteCrawler;
+package searchengine.services.SiteIndexing;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class SiteCrawlerTask extends RecursiveAction {
@@ -27,35 +28,54 @@ public class SiteCrawlerTask extends RecursiveAction {
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
     private final Set<String> visited;
+    private final AtomicBoolean indexing;
 
 
-    public SiteCrawlerTask(String url, Site site, PageRepository pageRepository, SiteRepository siteRepository, Set<String> visited) {
+    public SiteCrawlerTask(String url, Site site, PageRepository pageRepository, SiteRepository siteRepository, Set<String> visited, AtomicBoolean indexing) {
         this.url = url;
         this.site = site;
         this.pageRepository = pageRepository;
         this.siteRepository = siteRepository;
         this.visited = visited;
+        this.indexing = indexing;
     }
 
     @Override
     protected void compute() {
-        try {
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException("Task interrupted before start");
-            }
+        if (!indexing.get()) {
+            return;
+        }
 
+        try {
             Thread.sleep(DELAY_MS);
 
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException("Task interrupted during delay");
+            if (!indexing.get()) {
+                return;
             }
 
-            Document document = Jsoup.connect(url)
+            var connection = Jsoup.connect(url)
                     .userAgent("HeliontSearchBot/1.0 (+http://heliont.ru/bot.html)")
                     .referrer("http://www.google.com")
-                    .get();
+                    .ignoreHttpErrors(true)
+                    .timeout(10_000);
 
-            int statusCode = Jsoup.connect(url).execute().statusCode();
+            var response = connection.execute();
+            String contentType = response.contentType();
+
+            if (contentType == null ||
+                    !(contentType.startsWith("text/") ||
+                            contentType.contains("xml") ||
+                            contentType.startsWith("html"))){
+                return;
+            }
+
+            Document document;
+            try {
+                document = response.parse();
+            } catch (Exception e) {
+                return;
+            }
+            int statusCode = response.statusCode();
             String path = normalizePath(url);
 
             if (pageRepository.existsBySiteAndPath(site, path)) {
@@ -70,7 +90,6 @@ public class SiteCrawlerTask extends RecursiveAction {
                     .build();
 
             pageRepository.save(page);
-
             site.setStatusTime(LocalDateTime.now());
             siteRepository.save(site);
 
@@ -78,8 +97,8 @@ public class SiteCrawlerTask extends RecursiveAction {
             List<SiteCrawlerTask> subtasks = new ArrayList<>();
 
             for (Element link : links) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException("Task interrupted during link parsing");
+                if (!indexing.get()) {
+                    return;
                 }
 
                 String absUrl = link.absUrl("href");
@@ -90,6 +109,7 @@ public class SiteCrawlerTask extends RecursiveAction {
                 String normalizedSubPath = normalizePath(absUrl);
                 String fullUrl = site.getUrl() + normalizedSubPath;
 
+
                 synchronized (visited) {
                     if (visited.contains(fullUrl)) {
                         continue;
@@ -97,20 +117,14 @@ public class SiteCrawlerTask extends RecursiveAction {
                     visited.add(fullUrl);
                 }
 
-                subtasks.add(new SiteCrawlerTask(fullUrl, site, pageRepository, siteRepository, visited));
+                subtasks.add(new SiteCrawlerTask(fullUrl, site, pageRepository, siteRepository, visited, indexing));
             }
             invokeAll(subtasks);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            site.setStatus(Status.FAILED);
-            site.setLastError(e.getMessage());
-            site.setStatusTime(LocalDateTime.now());
-            siteRepository.save(site);
+            failSite("Индексация прервана", e);
         } catch (Exception e) {
-            site.setStatusTime(LocalDateTime.now());
-            site.setStatus(Status.FAILED);
-            site.setLastError(e.getMessage());
-            siteRepository.save(site);
+            failSite("Ошибка при индексации", e);
         }
     }
 
@@ -125,13 +139,21 @@ public class SiteCrawlerTask extends RecursiveAction {
 
             path = path.replaceAll("/{2,}", "/");
 
-            if (path.endsWith("/") && path.length() > 1) {
-                path = path.substring(0, path.length() - 1);
-            }
-
-            return path.toLowerCase();
+            return path.endsWith("/") && path.length() > 1 ? path.substring(0, path.length() - 1) : path.toLowerCase();
         } catch (URISyntaxException e) {
             return "/";
         }
+    }
+
+
+    private void failSite(String message, Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("Unhandled content type")) {
+                return;
+            }
+
+        site.setStatus(Status.FAILED);
+        site.setLastError(message + ": " + e.getMessage());
+        site.setStatusTime(LocalDateTime.now());
+        siteRepository.save(site);
     }
 }
