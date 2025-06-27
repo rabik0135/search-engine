@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dto.PageDto;
+import searchengine.dto.SiteDto;
 import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.repository.PageRepository;
@@ -74,5 +75,16 @@ public class PageService implements CRUDService<Page, Integer, PageDto>{
                 .stream()
                 .map(pageMapper::toDto)
                 .toList();
+    }
+
+    public List<PageDto> getAllPages() {
+        return pageRepository.findAll()
+                .stream()
+                .map(pageMapper::toDto)
+                .toList();
+    }
+
+    public int getPagesCount() {
+        return getAllPages().size();
     }
 }

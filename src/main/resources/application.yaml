@@ -9,11 +9,13 @@ spring:
   jpa:
     properties:
       hibernate:
+        connection:
+          isolation: 8
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
 
 indexing:
   user-agent: "HeliontSearchBot/1.0 (+http://heliont.ru/bot.html)"

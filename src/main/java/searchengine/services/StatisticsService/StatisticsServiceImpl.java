@@ -8,7 +8,14 @@ import searchengine.dto.statistics.DetailedStatisticsItem;
 import searchengine.dto.statistics.StatisticsData;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
+import searchengine.model.Site;
+import searchengine.services.LemmaService.LemmaService;
+import searchengine.services.PageService;
+import searchengine.services.SiteIndexing.SiteIndexingService;
+import searchengine.services.SiteService;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -17,48 +24,60 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class StatisticsServiceImpl implements StatisticsService {
 
+    private final SiteService siteService;
+    private final PageService pageService;
+    private final LemmaService lemmaService;
+    private final SiteIndexingService siteIndexingService;
+
     private final Random random = new Random();
+
     private final SitesList sites;
 
     @Override
     public StatisticsResponse getStatistics() {
-        String[] statuses = { "INDEXED", "FAILED", "INDEXING" };
-        String[] errors = {
-                "Ошибка индексации: главная страница сайта не доступна",
-                "Ошибка индексации: сайт не доступен",
-                ""
-        };
+        return StatisticsResponse.builder()
+                .result(true)
+                .statistics(getStatisticsData())
+                .build();
 
-        TotalStatistics total = new TotalStatistics();
-        total.setSites(sites.getSites().size());
-        total.setIndexing(true);
 
-        List<DetailedStatisticsItem> detailed = new ArrayList<>();
-        List<SiteFromConfig> sitesList = sites.getSites();
-        for(int i = 0; i < sitesList.size(); i++) {
-            SiteFromConfig site = sitesList.get(i);
-            DetailedStatisticsItem item = new DetailedStatisticsItem();
-            item.setName(site.name());
-            item.setUrl(site.url());
-            int pages = random.nextInt(1_000);
-            int lemmas = pages * random.nextInt(1_000);
-            item.setPages(pages);
-            item.setLemmas(lemmas);
-            item.setStatus(statuses[i % 3]);
-            item.setError(errors[i % 3]);
-            item.setStatusTime(System.currentTimeMillis() -
-                    (random.nextInt(10_000)));
-            total.setPages(total.getPages() + pages);
-            total.setLemmas(total.getLemmas() + lemmas);
-            detailed.add(item);
+    }
+
+    private TotalStatistics getTotalStatistics() {
+        return TotalStatistics.builder()
+                .sites(siteService.getSitesCount())
+                .pages(pageService.getPagesCount())
+                .lemmas(lemmaService.getLemmasCount())
+                .indexing(siteIndexingService.isIndexing())
+                .build();
+    }
+
+    private DetailedStatisticsItem getDetailedStatisticsItem(Site site) {
+        long timestampInSeconds = LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond();
+        return DetailedStatisticsItem.builder()
+                .url(site.getUrl())
+                .name(site.getName())
+                .status(String.valueOf(site.getStatus()))
+                .statusTime(timestampInSeconds)
+                .error(site.getLastError())
+                .pages(site.getPages().size())
+                .lemmas(site.getLemmas().size())
+                .build();
+    }
+
+    private List<DetailedStatisticsItem> getDetailedStatisticsItemList() {
+        List<DetailedStatisticsItem> detailedStatisticsItems = new ArrayList<>();
+        List<Site> sites = siteService.getAllSites();
+        for (Site site : sites) {
+            detailedStatisticsItems.add(getDetailedStatisticsItem(site));
         }
+        return detailedStatisticsItems;
+    }
 
-        StatisticsResponse response = new StatisticsResponse();
-        StatisticsData data = new StatisticsData();
-        data.setTotal(total);
-        data.setDetailed(detailed);
-        response.setStatistics(data);
-        response.setResult(true);
-        return response;
+    private StatisticsData getStatisticsData() {
+        return StatisticsData.builder()
+                .total(getTotalStatistics())
+                .detailed(getDetailedStatisticsItemList())
+                .build();
     }
 }

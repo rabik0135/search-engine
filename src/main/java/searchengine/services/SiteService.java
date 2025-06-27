@@ -100,4 +100,19 @@ public class SiteService implements CRUDService<Site, Integer, SiteDto> {
         site.setStatusTime(LocalDateTime.now());
         siteRepository.save(site);
     }
+
+    public List<SiteDto> getAllSitesDto() {
+        return siteRepository.findAll()
+                .stream()
+                .map(siteMapper::toDto)
+                .toList();
+    }
+
+    public List<Site> getAllSites() {
+        return siteRepository.findAll();
+    }
+
+    public int getSitesCount() {
+        return getAllSitesDto().size();
+    }
 }

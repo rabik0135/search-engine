@@ -72,7 +72,8 @@ public class SiteIndexingServiceImpl implements SiteIndexingService {
 
     @Override
     public IndexingResponse indexOnePage(String siteUrl) {
-      return sites.getSites().stream()
+      indexing.set(true);
+        return sites.getSites().stream()
                 .filter(siteFromConfig -> siteUrl.equals(siteFromConfig.url()))
                 .findFirst()
                 .map(this::indexSiteAndReturnSuccess)
