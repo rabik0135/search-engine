@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 
 public interface IndexRepository extends JpaRepository<Index, Integer> {
-
     @Query("""
             SELECT i.page
             FROM Index i

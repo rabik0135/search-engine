@@ -4,8 +4,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.jsoup.Jsoup;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-import searchengine.dto.LemmaDto;
 import searchengine.model.Index;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
@@ -13,7 +13,11 @@ import searchengine.model.Site;
 import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 
+import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +29,7 @@ public class LemmaServiceImpl implements LemmaService {
     private final LuceneMorphology luceneMorphology;
     private final LemmaRepository lemmaRepository;
     private final IndexRepository indexRepository;
+    private final Map<Integer, ReentrantLock> siteLocks = new ConcurrentHashMap<>();
 
 
     @Override
@@ -74,144 +79,127 @@ public class LemmaServiceImpl implements LemmaService {
         return lemmaSet;
     }
 
-    /*@Override
-    @Transactional
+    @Override
     public void processPage(Page page) {
+        Integer siteId = page.getSite().getId();
+        ReentrantLock lock = siteLocks.computeIfAbsent(siteId, id -> new ReentrantLock());
+
+        int maxAttempts = 3;
+        int attempt = 0;
+
+        while (attempt < maxAttempts) {
+            lock.lock();
+            try {
+                doProcessPage(page);
+                return;
+            } catch (DataAccessException e) {
+                if (isDeadlockException(e)) {
+                    attempt++;
+                    if (attempt >= maxAttempts) {
+                        throw e;
+                    }
+                    try {
+                        Thread.sleep(100 + new Random().nextInt(200));
+                    } catch (InterruptedException exception) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Interrupted during retry delay", exception);
+                    }
+                } else {
+                    throw e;
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
+
+    private boolean isDeadlockException(DataAccessException e) {
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            if (cause instanceof SQLException sqlException) {
+                return "40001".equals(sqlException.getSQLState()) || sqlException.getMessage().toLowerCase().contains("deadlock");
+            }
+            cause = cause.getCause();
+        }
+        return false;
+    }
+
+    @Transactional
+    public void doProcessPage(Page page) {
+        Map<String, Integer> lemmaMap = collectLemmas(Jsoup.parse(page.getContent()).text());
         Site site = page.getSite();
-        String text = Jsoup.parse(page.getContent()).text();
-        Map<String, Integer> lemmaMap = collectLemmas(text);
+        List<Lemma> existingLemmas = lemmaRepository.findAllBySiteAndLemmaIn(site, lemmaMap.keySet());
+
+        Map<String, Lemma> existingLemmaMap = existingLemmas.stream()
+                .collect(Collectors.toMap(Lemma::getLemma, Function.identity()));
+
+        List<Lemma> newLemmas = new ArrayList<>();
+        List<Index> indexes = new ArrayList<>();
 
         for (Map.Entry<String, Integer> entry : lemmaMap.entrySet()) {
-            String lemmaText = entry.getKey();
-            int countInPage = entry.getValue();
+            String lemmaString = entry.getKey();
+            Integer count = entry.getValue();
 
-            Lemma lemma = lemmaRepository.findBySiteAndLemma(site, lemmaText)
-                    .map(existingLemma -> {
-                        existingLemma.setFrequency(existingLemma.getFrequency() + countInPage);
-                        return lemmaRepository.save(existingLemma);
-                    })
-                    .orElseGet(() -> {
-                        return lemmaRepository.save(Lemma.builder()
-                                .site(site)
-                                .lemma(lemmaText)
-                                .frequency(countInPage)
-                                .build());
-                    });
-
-            Index index = Index.builder()
-                    .page(page)
-                    .lemma(lemma)
-                    .rank((float) countInPage)
-                    .build();
-            indexRepository.save(index);
-        }
-    }*/
-
-    /*@Override
-    @Transactional
-    public void processPage(Page page) {
-        Site site = page.getSite();
-        String text = Jsoup.parse(page.getContent()).text();
-
-        Map<String, Integer> lemmaCounts = collectLemmas(text);
-        if (lemmaCounts.isEmpty()) {
-            return;
-        }
-        Set<String> lemmaTexts = lemmaCounts.keySet()
-                .stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
-
-        List<Lemma> existingLemmas = lemmaRepository.findAllBySiteAndLemmaIn(site, lemmaTexts);
-        Map<String, Lemma> lemmaMap = existingLemmas.stream()
-                .collect(Collectors.toMap(
-                        Lemma::getLemma,
-                        lemma -> lemma,
-                        (existing, duplicate) -> existing));
-
-        List<Lemma> lemmasToSaveOrUpdate = new ArrayList<>();
-        List<Index> indexesToSaveOrUpdate = new ArrayList<>();
-
-        for (Map.Entry<String, Integer> entry : lemmaCounts.entrySet()) {
-            String lemmaText = entry.getKey();
-            int count = entry.getValue();
-
-            Lemma lemma = lemmaMap.get(lemmaText);
-            if (lemma != null) {
-                lemma.setFrequency(lemma.getFrequency() + count);
+            Lemma lemma = existingLemmaMap.get(lemmaString);
+            if (lemma == null) {
+                lemma = new Lemma();
+                lemma.setLemma(lemmaString);
+                lemma.setSite(site);
+                lemma.setFrequency(1);
+                newLemmas.add(lemma);
             } else {
-                lemma = Lemma.builder()
-                        .lemma(lemmaText.toLowerCase())
-                        .frequency(count)
-                        .site(site)
-                        .build();
-                lemmaMap.put(lemmaText, lemma);
+                lemma.setFrequency(lemma.getFrequency() + 1);
             }
 
-            lemmasToSaveOrUpdate.add(lemma);
-
-            Index index = Index.builder()
-                    .page(page)
-                    .lemma(lemma)
-                    .rank((float) count)
-                    .build();
-            indexesToSaveOrUpdate.add(index);
+            Index index = new Index();
+            index.setPage(page);
+            index.setLemma(lemma);
+            index.setRank((float) count);
+            indexes.add(index);
         }
 
-        lemmaRepository.saveAll(lemmasToSaveOrUpdate);
-        indexRepository.saveAll(indexesToSaveOrUpdate);
-    }*/
-
-    @Override
-    @Transactional
-    public void processPage(Page page) {
-        Site site = page.getSite();
-        String text = Jsoup.parse(page.getContent()).text();
-
-        Map<String, Integer> lemmaCounts = collectLemmas(text);
-        if (lemmaCounts.isEmpty()) return;
-
-        List<Lemma> lemmasToSave = new ArrayList<>();
-        List<Index> indexesToSave = new ArrayList<>();
-
-        for (Map.Entry<String, Integer> entry : lemmaCounts.entrySet()) {
-            String lemmaText = entry.getKey().toLowerCase();
-            int count = entry.getValue();
-
-            Lemma lemma = lemmaRepository.findBySiteAndLemma(site, lemmaText)
-                    .map(existing -> {
-                        existing.setFrequency(existing.getFrequency() + 1);
-                        return existing;
-                    })
-                    .orElseGet(() -> Lemma.builder()
-                            .site(site)
-                            .lemma(lemmaText)
-                            .frequency(1)
-                            .build());
-
-            lemmasToSave.add(lemma);
-
-            Index index = Index.builder()
-                    .page(page)
-                    .lemma(lemma)
-                    .rank((float) count)
-                    .build();
-            indexesToSave.add(index);
-        }
-
-        Map<String, Lemma> uniqueLemmas = lemmasToSave.stream()
-                .collect(Collectors.toMap(
-                        l -> l.getSite().getId() + "-" + l.getLemma(),
-                        l -> l,
-                        (l1, l2) -> l1));
-
-        lemmaRepository.saveAll(uniqueLemmas.values());
-        indexRepository.saveAll(indexesToSave);
+        lemmaRepository.saveAll(newLemmas);
+        indexRepository.saveAll(indexes);
     }
 
     @Override
     public int getLemmasCount() {
         return lemmaRepository.findAll().size();
+    }
+
+    @Override
+    public String generateSnippet(String content, Set<String> lemmas) {
+        String text = Jsoup.parse(content).text();
+        String[] words = arrayContainsRussianWords(text);
+
+        int snippetLength = 30;
+        int contextRadius = 20;
+
+        for (int i = 0; i < words.length; i++) {
+            String word = words[i];
+            Set<String> wordLemmas = getLemmaSet(word);
+            if (wordLemmas.stream().anyMatch(lemmas::contains)) {
+                int start = Math.max(0, i - contextRadius);
+                int end = Math.min(words.length, i + contextRadius);
+
+                StringBuilder snippet = new StringBuilder();
+
+                for (int j = start; j < end; j++) {
+                    String w = words[j];
+                    Set<String> wLemmas = getLemmaSet(w);
+
+                    if (wLemmas.stream().anyMatch(lemmas::contains)) {
+                        snippet.append("<b>").append(w).append("</b>");
+                    } else {
+                        snippet.append(w);
+                    }
+
+                    snippet.append(" ");
+                }
+                return (start > 0 ? "..." : "") + snippet.toString().trim() + (end < words.length ? "..." : "");
+            }
+        }
+        return ("");
     }
 
 
@@ -237,13 +225,11 @@ public class LemmaServiceImpl implements LemmaService {
     }
 
     private boolean hasParticleProperty(String wordBase) {
-        for (String property: PARTICLES_NAMES) {
+        for (String property : PARTICLES_NAMES) {
             if (wordBase.toUpperCase().contains(property)) {
                 return true;
             }
         }
         return false;
     }
-
-
 }

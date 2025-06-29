@@ -1,6 +1,5 @@
 package searchengine.services;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +8,6 @@ import searchengine.config.SiteFromConfig;
 import searchengine.dto.SiteDto;
 import searchengine.model.Site;
 import searchengine.model.Status;
-import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 import searchengine.util.mapper.SiteMapper;
 
@@ -21,8 +19,6 @@ import java.util.List;
 @Service
 public class SiteService implements CRUDService<Site, Integer, SiteDto> {
     private final SiteRepository siteRepository;
-    private final PageRepository pageRepository;
-    private final EntityManager entityManager;
     private final SiteMapper siteMapper;
 
     @Override

@@ -1,7 +1,6 @@
 package searchengine.dto;
 
 import lombok.Builder;
-import searchengine.model.Site;
 
 @Builder
 public record SearchResult(String siteUrl,

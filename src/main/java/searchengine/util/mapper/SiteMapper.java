@@ -9,7 +9,6 @@ import searchengine.model.Site;
 
 @Mapper(componentModel = "spring")
 public interface SiteMapper {
-
     Site toEntity(SiteDto dto);
     SiteDto toDto(Site entity);
 

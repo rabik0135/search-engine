@@ -29,5 +29,4 @@ public class Page {
 
     @Column(nullable = false, columnDefinition = "MEDIUMTEXT")
     private String content;
-
 }

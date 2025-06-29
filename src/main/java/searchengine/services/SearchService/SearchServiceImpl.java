@@ -1,6 +1,5 @@
 package searchengine.services.SearchService;
 
-import com.fasterxml.jackson.databind.node.DoubleNode;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,6 @@ public class SearchServiceImpl implements SearchService{
     private final LemmaRepository lemmaRepository;
     private final SiteRepository siteRepository;
     private final IndexRepository indexRepository;
-
 
     @Override
     public SearchResponse search(String query, String siteUrl) {
@@ -77,12 +75,12 @@ public class SearchServiceImpl implements SearchService{
                     Site site = page.getSite();
 
                     String title = Jsoup.parse(page.getContent()).title();
-                    String snippet = generateSnippet(page.getContent(), lemmas);
+                    String snippet = lemmaService.generateSnippet(page.getContent(), lemmas);
 
                     return SearchResult.builder()
                             .siteUrl(site.getUrl())
                             .siteName(site.getName())
-                            .uri(page.getPath())
+                            .uri(site.getUrl() + page.getPath())
                             .title(title)
                             .snippet(snippet)
                             .relevance(relevance)
@@ -90,14 +88,6 @@ public class SearchServiceImpl implements SearchService{
                 }).collect(Collectors.toList());
 
         return SearchResponse.success(results);
-    }
-
-    private String generateSnippet(String content, Set<String> lemmas) {
-        String text = Jsoup.parse(content).text().toLowerCase();
-        for (String lemma : lemmas) {
-            text = text.replaceAll("(?i)\\b(" + lemma + ")\\b", "<b>$1</b>");
-        }
-        return text.length() > 300 ? text.substring(0, 300) + "..." : text;
     }
 
     private List<Lemma> getFilteredLemmas(Set<String> lemmas, List<Site> sites) {
@@ -121,7 +111,6 @@ public class SearchServiceImpl implements SearchService{
                     .sum();
             result.put(page, rankSum);
         }
-
         return result;
     }
 

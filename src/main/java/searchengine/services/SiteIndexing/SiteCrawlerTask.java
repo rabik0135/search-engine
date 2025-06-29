@@ -93,7 +93,7 @@ public class SiteCrawlerTask extends RecursiveAction {
                     .build();
 
             pageRepository.save(page);
-            lemmaService.processPage(page);     //ошибка
+            lemmaService.processPage(page);
             site.setStatusTime(LocalDateTime.now());
             siteRepository.save(site);
 
@@ -113,14 +113,12 @@ public class SiteCrawlerTask extends RecursiveAction {
                 String normalizedSubPath = normalizePath(absUrl);
                 String fullUrl = site.getUrl() + normalizedSubPath;
 
-
                 synchronized (visited) {
                     if (visited.contains(fullUrl)) {
                         continue;
                     }
                     visited.add(fullUrl);
                 }
-
                 subtasks.add(new SiteCrawlerTask(fullUrl, site, pageRepository, siteRepository, lemmaService, visited, indexing));
             }
             invokeAll(subtasks);

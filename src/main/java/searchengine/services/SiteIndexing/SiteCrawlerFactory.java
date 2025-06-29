@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 @RequiredArgsConstructor
 public class SiteCrawlerFactory {
-
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
     private final LemmaService lemmaService;

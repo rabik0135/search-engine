@@ -11,4 +11,5 @@ public interface LemmaService {
     Set<String> getLemmaSet(String text);
     void processPage(Page page);
     int getLemmasCount();
+    String generateSnippet(String content, Set<String> lemmas);
 }

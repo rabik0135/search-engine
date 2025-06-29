@@ -6,10 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import searchengine.dto.IndexingResponse;
 import searchengine.dto.SearchResponse;
 import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.services.PageService;
 import searchengine.services.SearchService.SearchService;
 import searchengine.services.SiteIndexing.SiteIndexingService;
-import searchengine.services.SiteService;
 import searchengine.services.StatisticsService.StatisticsService;
 
 @RequiredArgsConstructor
@@ -19,19 +17,17 @@ public class ApiController {
     private final StatisticsService statisticsService;
     private final SiteIndexingService siteIndexingService;
     private final SearchService searchService;
-    private final SiteService siteService;
-
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
         StatisticsResponse response = statisticsService.getStatistics();
-        return response.isResult()
+        return response.result()
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.badRequest().body(response);
     }
 
     @GetMapping("/startIndexing")
-    public ResponseEntity<?> startIndexing() {
+    public ResponseEntity<IndexingResponse> startIndexing() {
         IndexingResponse response = siteIndexingService.startIndexing();
         return response.result()
                 ? ResponseEntity.ok(response)
@@ -39,7 +35,7 @@ public class ApiController {
     }
 
     @GetMapping("/stopIndexing")
-    public ResponseEntity<?> stopIndexing() {
+    public ResponseEntity<IndexingResponse> stopIndexing() {
         IndexingResponse response = siteIndexingService.stopIndexing();
         return response.result()
                 ? ResponseEntity.ok(response)
@@ -47,7 +43,7 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<?> addPageForIndexing(@RequestParam String url) {
+    public ResponseEntity<IndexingResponse> addPageForIndexing(@RequestParam String url) {
         IndexingResponse response = siteIndexingService.indexOnePage(url);
         return response.result()
                 ? ResponseEntity.ok(response)
@@ -55,10 +51,10 @@ public class ApiController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestParam String query,
-                                    @RequestParam(required = false) String siteUrl
+    public ResponseEntity<SearchResponse> search(@RequestParam String query,
+                                    @RequestParam(required = false) String site
     ) {
-        SearchResponse response = searchService.search(query, siteUrl);
+        SearchResponse response = searchService.search(query, site);
         return response.result()
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.badRequest().body(response);

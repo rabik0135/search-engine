@@ -49,7 +49,6 @@ public class SiteIndexingServiceImpl implements SiteIndexingService {
             });
             runningTasks.add(future);
         }
-
         return new IndexingResponse(true, null);
     }
 

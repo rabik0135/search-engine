@@ -10,6 +10,5 @@ import java.util.List;
 @Repository
 public interface PageRepository extends JpaRepository<Page, Integer> {
     List<Page> findBySiteId(Integer siteId);
-    void deleteAllBySiteId(Integer siteId);
     boolean existsBySiteAndPath(Site site, String path);
 }
