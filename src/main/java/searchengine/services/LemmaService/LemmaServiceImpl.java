@@ -175,19 +175,18 @@ public class LemmaServiceImpl implements LemmaService {
         List<Index> indexesToSave = new ArrayList<>();
 
         for (Map.Entry<String, Integer> entry : lemmaCounts.entrySet()) {
-            String lemmaText = entry.getKey().toLowerCase(); // нормализуем
+            String lemmaText = entry.getKey().toLowerCase();
             int count = entry.getValue();
 
-            // ⚠️ Гарантированная проверка в БД
             Lemma lemma = lemmaRepository.findBySiteAndLemma(site, lemmaText)
                     .map(existing -> {
-                        existing.setFrequency(existing.getFrequency() + count);
+                        existing.setFrequency(existing.getFrequency() + 1);
                         return existing;
                     })
                     .orElseGet(() -> Lemma.builder()
                             .site(site)
                             .lemma(lemmaText)
-                            .frequency(count)
+                            .frequency(1)
                             .build());
 
             lemmasToSave.add(lemma);
@@ -200,7 +199,6 @@ public class LemmaServiceImpl implements LemmaService {
             indexesToSave.add(index);
         }
 
-        // Удаляем дубликаты по site+lemma перед сохранением (если вдруг дублировали вручную)
         Map<String, Lemma> uniqueLemmas = lemmasToSave.stream()
                 .collect(Collectors.toMap(
                         l -> l.getSite().getId() + "-" + l.getLemma(),

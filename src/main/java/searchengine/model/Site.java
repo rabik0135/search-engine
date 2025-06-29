@@ -37,10 +37,6 @@ public class Site {
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Page> pages;
 
-    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Lemma> lemmas;
-
-    public void clearPages() {
-        pages.clear();
-    }
 }

@@ -14,6 +14,8 @@ import java.util.Set;
 public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
     Optional<Lemma> findBySiteAndLemma(Site site, String lemma);
     List<Lemma> findAllBySiteAndLemmaIn(Site site, Set<String> lemmaTexts);
+    List<Lemma> findByLemmaIn(Set<String> lemmas);
+    List<Lemma> findAllByLemmaInAndSiteIn(Set<String> lemmas, List<Site> sites);
 
 
     /*@Modifying

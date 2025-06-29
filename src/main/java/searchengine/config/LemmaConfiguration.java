@@ -5,6 +5,8 @@ import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import searchengine.services.LemmaService.LemmaService;
+import searchengine.services.LemmaService.LemmaServiceImpl;
 
 @Configuration
 public class LemmaConfiguration {
@@ -14,4 +16,5 @@ public class LemmaConfiguration {
     public LuceneMorphology luceneMorphology() {
         return new RussianLuceneMorphology();
     }
+
 }

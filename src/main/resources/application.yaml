@@ -26,9 +26,9 @@ indexing:
 
 indexing-settings:
   sites:
-    - url: https://beltexoptic.by/
+    - url: https://beltexoptic.by
       name: Белтекс Оптик
-    - url: https://lenta.ru/
+    - url: https://lenta.ru
       name: Lenta
-    - url: https://bizlida.by/
+    - url: https://bizlida.by
       name: BizLida

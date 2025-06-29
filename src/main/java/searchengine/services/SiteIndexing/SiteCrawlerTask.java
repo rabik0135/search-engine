@@ -93,7 +93,7 @@ public class SiteCrawlerTask extends RecursiveAction {
                     .build();
 
             pageRepository.save(page);
-            lemmaService.processPage(page);
+            lemmaService.processPage(page);     //ошибка
             site.setStatusTime(LocalDateTime.now());
             siteRepository.save(site);
 

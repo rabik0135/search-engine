@@ -66,7 +66,7 @@ public class SiteService implements CRUDService<Site, Integer, SiteDto> {
 
     @Transactional
     public void deleteSiteData(String url) {
-        siteRepository.findByUrl(url).ifPresent(
+         siteRepository.findByUrl(url).ifPresent(
                 siteRepository::delete
         );
     }
