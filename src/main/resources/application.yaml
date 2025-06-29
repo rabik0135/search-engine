@@ -17,13 +17,6 @@ spring:
       ddl-auto: update
     show-sql: false
 
-indexing:
-  user-agent: "HeliontSearchBot/1.0 (+http://heliont.ru/bot.html)"
-  referrer: "http://www.google.com"
-  delay-ms: 1500
-  timeout-ms: 10000
-  page-processing-timeout-ms : 500
-
 indexing-settings:
   sites:
     - url: https://lenta.ru
