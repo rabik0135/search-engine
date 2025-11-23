@@ -1,7 +1,9 @@
 package searchengine.dto;
 
-public record IndexDto(Integer id,
-                       Integer pageId,
-                       Integer lemmaId,
-                       Float rank) {
+public record IndexDto(
+        Long id,
+        Long pageId,
+        Long lemmaId,
+        Float rank
+) {
 }

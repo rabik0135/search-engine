@@ -8,7 +8,9 @@ import searchengine.model.Site;
 import java.util.List;
 
 @Repository
-public interface PageRepository extends JpaRepository<Page, Integer> {
-    List<Page> findBySiteId(Integer siteId);
+public interface PageRepository extends JpaRepository<Page, Long> {
+
+    List<Page> findBySiteId(Long siteId);
     boolean existsBySiteAndPath(Site site, String path);
+
 }

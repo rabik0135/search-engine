@@ -2,20 +2,16 @@ server:
   port: 8080
 
 spring:
-  datasource:
-    username: root
-    password: rootroot
-    url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
+  application:
+    name: search-engine
   jpa:
-    properties:
-      hibernate:
-        connection:
-          isolation: 8
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: none
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    clear-checksums: false
+  profiles:
+    active: dev
 
 indexing-settings:
   sites:

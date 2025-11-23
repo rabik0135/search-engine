@@ -1,7 +1,20 @@
 package searchengine.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -9,12 +22,14 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "lemma")
+@Table(name = "lemma", indexes ={
+        @Index(name = "uq_lemma_site", columnList = "lemma, site_id", unique = true)
+})
 public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Integer id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", nullable = false)
@@ -25,4 +40,5 @@ public class Lemma {
 
     @Column(nullable = false)
     private Integer frequency;
+
 }

@@ -8,9 +8,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class LemmaConfiguration {
+
     @Bean
     @SneakyThrows
     public LuceneMorphology luceneMorphology() {
         return new RussianLuceneMorphology();
     }
+
 }

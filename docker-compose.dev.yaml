@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: search_engine_db
+    restart: no
+    ports:
+      - "${DATABASE_PORT}:5432"
+    volumes:
+      - search_engine_pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+volumes:
+  search_engine_pg_data:

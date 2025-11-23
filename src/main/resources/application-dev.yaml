@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    username: ivan
+    password: rootroot
+    url: jdbc:postgresql://localhost:5432/searchengine_db
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false

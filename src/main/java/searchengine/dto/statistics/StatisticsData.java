@@ -5,6 +5,8 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record StatisticsData(TotalStatistics total,
-                             List<DetailedStatisticsItem> detailed) {
+public record StatisticsData(
+        TotalStatistics total,
+        List<DetailedStatisticsItem> detailed
+) {
 }

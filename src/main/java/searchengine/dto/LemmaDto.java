@@ -1,7 +1,9 @@
 package searchengine.dto;
 
-public record LemmaDto(Integer id,
-                       Integer siteId,
-                       String lemma,
-                       Integer frequency) {
+public record LemmaDto(
+        Long id,
+        Long siteId,
+        String lemma,
+        Integer frequency
+) {
 }

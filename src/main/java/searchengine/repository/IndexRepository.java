@@ -11,7 +11,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public interface IndexRepository extends JpaRepository<Index, Integer> {
+public interface IndexRepository extends JpaRepository<Index, Long> {
+
     @Query("""
             SELECT i.page
             FROM Index i
@@ -28,5 +29,6 @@ public interface IndexRepository extends JpaRepository<Index, Integer> {
     Set<Page> findPagesByLemmaAndPageIn(@Param("lemma") Lemma lemma,
                                         @Param("pages") Collection<Page> pages);
 
-    List<Index> findAllByPageAndLemmaIdIn(Page page, List<Integer> lemmaIds);
+    List<Index> findAllByPageAndLemmaIdIn(Page page, List<Long> lemmaIds);
+
 }

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="4" author="ivan rabinchuk">
+        <comment>Create index_data table and its columns</comment>
+        <createTable tableName="index_data">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="page_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lemma_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rank" type="FLOAT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="index_data"
+                                 baseColumnNames="page_id"
+                                 constraintName="fk_index_data_page_id"
+                                 referencedTableName="page"
+                                 referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="index_data"
+                                 baseColumnNames="lemma_id"
+                                 constraintName="fk_index_data_lemma_id"
+                                 referencedTableName="lemma"
+                                 referencedColumnNames="id"/>
+
+        <addUniqueConstraint tableName="index_data" columnNames="page_id, lemma_id" constraintName="uq_page_lemma"/>
+    </changeSet>
+
+</databaseChangeLog>
