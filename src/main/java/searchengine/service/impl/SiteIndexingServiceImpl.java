@@ -8,6 +8,7 @@ import searchengine.dto.IndexingResponse;
 import searchengine.model.Site;
 import searchengine.model.Status;
 import searchengine.repository.SiteRepository;
+import searchengine.service.SiteService;
 import searchengine.util.SiteCrawler.SiteCrawlerFactory;
 import searchengine.util.SiteCrawler.SiteCrawlerTask;
 import searchengine.service.SiteIndexingService;
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RequiredArgsConstructor
 public class SiteIndexingServiceImpl implements SiteIndexingService {
     private final SitesList sites;
-    private final SiteServiceImpl siteServiceImpl;
+    private final SiteService siteService;
     private final SiteRepository siteRepository;
     private final SiteCrawlerFactory crawlerFactory;
 
@@ -67,7 +68,7 @@ public class SiteIndexingServiceImpl implements SiteIndexingService {
         }
         runningTasks.clear();
 
-        activeSites.forEach(site -> siteServiceImpl.updateSiteStatus(site, Status.FAILED, "Индексация остановлена пользователем"));
+        activeSites.forEach(site -> siteService.updateSiteStatus(site, Status.FAILED, "Индексация остановлена пользователем"));
         return new IndexingResponse(true, null);
     }
 
@@ -92,9 +93,9 @@ public class SiteIndexingServiceImpl implements SiteIndexingService {
     }
 
     private void indexSite(SiteFromConfig siteFromConfig) {
-        siteServiceImpl.deleteSiteData(siteFromConfig.url());
+        siteService.deleteSiteData(siteFromConfig.url());
 
-        Site site = siteServiceImpl.createSiteFromConfig(siteFromConfig);
+        Site site = siteService.createSiteFromConfig(siteFromConfig);
         activeSites.add(site);
 
         try {

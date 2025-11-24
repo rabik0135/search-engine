@@ -19,8 +19,6 @@ indexing-settings:
       name: Lenta
     - url: https://beltexoptic.by
       name: Белтекс Оптик
-    - url: https://bizlida.by
-      name: BizLida
     - url: https://www.onliner.by/
       name: Onliner
     - url: https://atlant.by/

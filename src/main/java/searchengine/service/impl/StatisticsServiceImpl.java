@@ -8,7 +8,9 @@ import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
 import searchengine.model.Site;
 import searchengine.service.LemmaService;
+import searchengine.service.PageService;
 import searchengine.service.SiteIndexingService;
+import searchengine.service.SiteService;
 import searchengine.service.StatisticsService;
 
 import java.time.LocalDateTime;
@@ -20,8 +22,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StatisticsServiceImpl implements StatisticsService {
 
-    private final SiteServiceImpl siteServiceImpl;
-    private final PageServiceImpl pageServiceImpl;
+    private final SiteService siteService;
+    private final PageService pageService;
     private final LemmaService lemmaService;
     private final SiteIndexingService siteIndexingService;
 
@@ -35,8 +37,8 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private TotalStatistics getTotalStatistics() {
         return TotalStatistics.builder()
-                .sites(siteServiceImpl.getSitesCount())
-                .pages(pageServiceImpl.getPagesCount())
+                .sites(siteService.getSitesCount())
+                .pages(pageService.getPagesCount())
                 .lemmas(lemmaService.getLemmasCount())
                 .indexing(siteIndexingService.isIndexing())
                 .build();
@@ -57,7 +59,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private List<DetailedStatisticsItem> getDetailedStatisticsItemList() {
         List<DetailedStatisticsItem> detailedStatisticsItems = new ArrayList<>();
-        List<Site> sites = siteServiceImpl.getAllSites();
+        List<Site> sites = siteService.getAllSites();
         for (Site site : sites) {
             detailedStatisticsItems.add(getDetailedStatisticsItem(site));
         }
@@ -70,4 +72,5 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .detailed(getDetailedStatisticsItemList())
                 .build();
     }
+
 }

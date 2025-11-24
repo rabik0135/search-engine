@@ -10,6 +10,7 @@ import java.util.Set;
 public interface LemmaRepository extends JpaRepository<Lemma, Long> {
 
     List<Lemma> findAllBySiteAndLemmaIn(Site site, Set<String> lemmaTexts);
+
     List<Lemma> findAllByLemmaInAndSiteIn(Set<String> lemmas, List<Site> sites);
 
 }

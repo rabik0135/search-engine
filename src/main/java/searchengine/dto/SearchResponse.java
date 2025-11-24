@@ -4,8 +4,11 @@ import java.util.List;
 
 public record SearchResponse(
         boolean result,
+
         Integer count,
+
         List<SearchResult> data,
+
         String error
 ) {
 

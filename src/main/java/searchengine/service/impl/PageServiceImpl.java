@@ -8,7 +8,6 @@ import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.service.CRUDService;
 import searchengine.mapper.PageMapper;
 import searchengine.service.PageService;
 
@@ -72,6 +71,7 @@ public class PageServiceImpl implements PageService {
         pageRepository.deleteById(id);
     }
 
+    @Override
     public List<PageDto> findBySiteId(Long siteId) {
         return pageRepository.findBySiteId(siteId)
                 .stream()
@@ -79,6 +79,7 @@ public class PageServiceImpl implements PageService {
                 .toList();
     }
 
+    @Override
     public List<PageDto> getAllPages() {
         return pageRepository.findAll()
                 .stream()
@@ -86,6 +87,7 @@ public class PageServiceImpl implements PageService {
                 .toList();
     }
 
+    @Override
     public int getPagesCount() {
         return getAllPages().size();
     }

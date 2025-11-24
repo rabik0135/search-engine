@@ -63,18 +63,21 @@ public class SiteServiceImpl implements SiteService {
     }
 
     @Transactional
+    @Override
     public void deleteSiteData(String url) {
          siteRepository.findByUrl(url).ifPresent(
                 siteRepository::delete
         );
     }
 
+    @Override
     public Site getSiteByUrl(String url) {
         return siteRepository.findByUrl(url).orElseThrow(
                 () -> new RuntimeException("Site not found with URL: " + url)
         );
     }
 
+    @Override
     public Site createSiteFromConfig(SiteFromConfig siteFromConfig) {
         Site site = Site.builder()
                 .status(Status.INDEXING)
@@ -87,6 +90,7 @@ public class SiteServiceImpl implements SiteService {
         return siteRepository.save(site);
     }
 
+    @Override
     public void updateSiteStatus(Site site, Status status, String error) {
         site.setStatus(status);
         site.setStatusTime(LocalDateTime.now());
@@ -94,11 +98,13 @@ public class SiteServiceImpl implements SiteService {
         siteRepository.save(site);
     }
 
+    @Override
     public void updateSiteStatusTime(Site site) {
         site.setStatusTime(LocalDateTime.now());
         siteRepository.save(site);
     }
 
+    @Override
     public List<SiteDto> getAllSitesDto() {
         return siteRepository.findAll()
                 .stream()
@@ -106,10 +112,12 @@ public class SiteServiceImpl implements SiteService {
                 .toList();
     }
 
+    @Override
     public List<Site> getAllSites() {
         return siteRepository.findAll();
     }
 
+    @Override
     public int getSitesCount() {
         return getAllSitesDto().size();
     }

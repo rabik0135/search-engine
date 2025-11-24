@@ -7,7 +7,6 @@ import java.util.Map;
 
 @Builder
 public record ErrorResponseDto(
-
         String path,
 
         String errorMessage,

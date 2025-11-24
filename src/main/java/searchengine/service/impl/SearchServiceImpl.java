@@ -44,12 +44,12 @@ public class SearchServiceImpl implements SearchService {
                 : List.of(siteRepository.findByUrl(siteUrl).orElse(null));
 
         if (sites.isEmpty() || sites.get(0) == null) {
-            return SearchResponse.error("Нет сайтов для поиска");               //TODO: Придумать ошибку
+            return SearchResponse.error("Нет сайтов для поиска");
         }
 
         List<Lemma> filteredLemmas  = getFilteredLemmas(lemmas, sites);
         if (filteredLemmas.isEmpty()) {
-            return SearchResponse.error("");                                    //TODO: Придумать ошибку
+            return SearchResponse.error("");
         }
 
         filteredLemmas.sort(Comparator.comparing(Lemma::getFrequency));
