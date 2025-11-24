@@ -43,9 +43,10 @@ public class ApiController {
     }
 
     @GetMapping("/search")
-    public SearchResponse search(@RequestParam String query,
-                                    @RequestParam(required = false) String site
-    ) {
+    public SearchResponse search(
+            @RequestParam String query,
+            @RequestParam(required = false) String site) {
+
         return searchService.search(query, site);
     }
 

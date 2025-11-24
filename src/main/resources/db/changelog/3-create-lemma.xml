@@ -27,7 +27,8 @@
                                  baseColumnNames="site_id"
                                  constraintName="fk_lemma_site_id"
                                  referencedTableName="site"
-                                 referencedColumnNames="id"/>
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
 
         <addUniqueConstraint tableName="lemma" columnNames="lemma, site_id" constraintName="uq_lemma_site"/>
     </changeSet>

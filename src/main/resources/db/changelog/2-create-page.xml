@@ -30,7 +30,8 @@
                                  baseColumnNames="site_id"
                                  constraintName="fk_page_site_id"
                                  referencedTableName="site"
-                                 referencedColumnNames="id"/>
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
 
         <createIndex tableName="page" indexName="idx_path">
             <column name="path"/>

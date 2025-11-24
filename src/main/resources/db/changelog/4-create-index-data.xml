@@ -27,13 +27,15 @@
                                  baseColumnNames="page_id"
                                  constraintName="fk_index_data_page_id"
                                  referencedTableName="page"
-                                 referencedColumnNames="id"/>
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
 
         <addForeignKeyConstraint baseTableName="index_data"
                                  baseColumnNames="lemma_id"
                                  constraintName="fk_index_data_lemma_id"
                                  referencedTableName="lemma"
-                                 referencedColumnNames="id"/>
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
 
         <addUniqueConstraint tableName="index_data" columnNames="page_id, lemma_id" constraintName="uq_page_lemma"/>
     </changeSet>
