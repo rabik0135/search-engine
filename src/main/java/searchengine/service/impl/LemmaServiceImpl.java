@@ -130,8 +130,8 @@ public class LemmaServiceImpl implements LemmaService {
     public void doProcessPage(Page page) {
         Map<String, Integer> lemmaMap = collectLemmas(Jsoup.parse(page.getContent()).text());
         Site site = page.getSite();
-        List<Lemma> existingLemmas = lemmaRepository.findAllBySiteAndLemmaIn(site, lemmaMap.keySet());
 
+        List<Lemma> existingLemmas = lemmaRepository.findAllBySiteAndLemmaIn(site, lemmaMap.keySet());
         Map<String, Lemma> existingLemmaMap = existingLemmas.stream()
                 .collect(Collectors.toMap(Lemma::getLemma, Function.identity()));
 
@@ -143,6 +143,7 @@ public class LemmaServiceImpl implements LemmaService {
             Integer count = entry.getValue();
 
             Lemma lemma = existingLemmaMap.get(lemmaString);
+
             if (lemma == null) {
                 lemma = new Lemma();
                 lemma.setLemma(lemmaString);
